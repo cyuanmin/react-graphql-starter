@@ -7,7 +7,24 @@ import {
   graphql,
   ApolloProvider,
 } from 'react-apollo';
-const client = new ApolloClient();
+
+import { 
+  makeExecutableSchema,
+  addMockFunctionsToSchema
+} from 'graphql-tools';
+ import { mockNetworkInterfaceWithSchema } from 'apollo-test-utils';
+ import { typeDefs } from './schema';
+
+ //////////////////////////
+ // Mock added
+ const schema = makeExecutableSchema({ typeDefs });
+ addMockFunctionsToSchema({ schema });
+ const mockNetworkInterface = mockNetworkInterfaceWithSchema({ schema });
+ /////////////////////////
+
+const client = new ApolloClient({
+  networkInterface: mockNetworkInterface
+});
 
 const channelsListQuery = gql`
 query ChannelsListQuery {
