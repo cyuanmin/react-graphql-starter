@@ -27,6 +27,12 @@ import {
   uri: 'http://localhost:4000/graphql',
 });
 
+networkInterface.use([{
+  applyMiddleware(req, next) {
+    setTimeout(next, 5000);
+  },
+}]);
+
 const client = new ApolloClient({
   //networkInterface: mockNetworkInterface
     networkInterface: networkInterface
