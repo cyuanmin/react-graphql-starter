@@ -6,6 +6,7 @@ import {
   gql,
   graphql,
   ApolloProvider,
+  createNetworkInterface // <-- this line is new!
 } from 'react-apollo';
 
 import { 
@@ -14,40 +15,22 @@ import {
 } from 'graphql-tools';
  import { mockNetworkInterfaceWithSchema } from 'apollo-test-utils';
  import { typeDefs } from './schema';
-
+ import AddChannel from './components/AddChannel';
+ import ChannelsListWithData from './components/ChannelsListWithData';
  //////////////////////////
  // Mock added
  const schema = makeExecutableSchema({ typeDefs });
- addMockFunctionsToSchema({ schema });
- const mockNetworkInterface = mockNetworkInterfaceWithSchema({ schema });
+ //addMockFunctionsToSchema({ schema });
+ //const mockNetworkInterface = mockNetworkInterfaceWithSchema({ schema });
  /////////////////////////
-
-const client = new ApolloClient({
-  networkInterface: mockNetworkInterface
+ const networkInterface = createNetworkInterface({ 
+  uri: 'http://localhost:4000/graphql',
 });
 
-const channelsListQuery = gql`
-query ChannelsListQuery {
-  channels {
-    id
-    name
-  }
-}
-`;
-
-const ChannelsList = ({ data: {loading, error, channels }}) => {
-  if (loading) {
-    return <p>Loading ...</p>;
-  }
-  if (error) {
-    return <p>{error.message}</p>;
-  }
-  return <ul className="Item-list">
-    { channels.map( ch => <li key={ch.id}>{ch.name}</li> ) }
-  </ul>;
-};
-
-const ChannelsListWithData = graphql(channelsListQuery)(ChannelsList);
+const client = new ApolloClient({
+  //networkInterface: mockNetworkInterface
+    networkInterface: networkInterface
+});
 
 class App extends Component {
   render() {
