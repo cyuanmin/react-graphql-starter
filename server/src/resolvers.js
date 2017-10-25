@@ -1,3 +1,5 @@
+import { PubSub, withFilter } from 'graphql-subscriptions';
+
 const channels = [{
     id: 1,
     name: 'soccer',
@@ -7,7 +9,8 @@ const channels = [{
   }];
   
   let nextId = 3;
-  
+  const pubsub = new PubSub();
+
   export const resolvers = {
     Query: {
       channels: () => {
@@ -20,5 +23,15 @@ const channels = [{
         channels.push(newChannel);
         return newChannel;
       },
+      addMessage: (root, { message }) => {
+        const channel = channels.find(channel => channel.id === message.channelId);
+        if(!channel)
+          throw new Error("Channel does not exist");
+  
+        const newMessage = { id: String(nextMessageId++), text: message.text };
+        channel.messages.push(newMessage);
+        pubsub.publish('messageAdded', { messageAdded: newMessage, channelId: message.channelId });
+        return newMessage;
+      }
     }
   };

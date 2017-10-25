@@ -1,55 +1,61 @@
 import React, { Component } from 'react';
-import logo from './apollo-logo.svg';
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Switch,
+} from 'react-router-dom';
+
 import './App.css';
+import ChannelsListWithData from './components/ChannelsListWithData';
+import NotFound from './components/NotFound';
+import ChannelDetails from './components/ChannelDetails';
+
 import {
   ApolloClient,
-  gql,
-  graphql,
   ApolloProvider,
-  createNetworkInterface // <-- this line is new!
+  createNetworkInterface,
+  toIdValue,
 } from 'react-apollo';
 
-import { 
-  makeExecutableSchema,
-  addMockFunctionsToSchema
-} from 'graphql-tools';
- import { mockNetworkInterfaceWithSchema } from 'apollo-test-utils';
- import { typeDefs } from './schema';
- import AddChannel from './components/AddChannel';
- import ChannelsListWithData from './components/ChannelsListWithData';
- //////////////////////////
- // Mock added
- const schema = makeExecutableSchema({ typeDefs });
- //addMockFunctionsToSchema({ schema });
- //const mockNetworkInterface = mockNetworkInterfaceWithSchema({ schema });
- /////////////////////////
- const networkInterface = createNetworkInterface({ 
-  uri: 'http://localhost:4000/graphql',
-});
 
+const networkInterface = createNetworkInterface({ uri: 'http://localhost:4000/graphql' });
 networkInterface.use([{
   applyMiddleware(req, next) {
-    setTimeout(next, 5000);
+    setTimeout(next, 500);
   },
 }]);
 
+function dataIdFromObject (result) {
+  if (result.__typename) {
+    if (result.id !== undefined) {
+      return `${result.__typename}:${result.id}`;
+    }
+  }
+  return null;
+}
+
 const client = new ApolloClient({
-  //networkInterface: mockNetworkInterface
-    networkInterface: networkInterface
+  networkInterface,
+  dataIdFromObject,
 });
+
 
 class App extends Component {
   render() {
     return (
       <ApolloProvider client={client}>
-         <div className="App">
-           <div className="App-header">
-             <img src={logo} className="App-logo" alt="logo" />
-             <h2>Welcome to Apollo</h2>
-           </div>
-           <ChannelsListWithData />
-         </div>
-       </ApolloProvider>
+        <BrowserRouter>
+          <div className="App">
+            <Link to="/" className="navbar">React + GraphQL Tutorial</Link>
+            <Switch>
+              <Route exact path="/" component={ChannelsListWithData}/>
+              <Route path="/channel/:channelId" component={ChannelDetails}/>
+              <Route component={ NotFound }/>
+            </Switch>
+          </div>
+        </BrowserRouter>
+      </ApolloProvider>
     );
   }
 }
